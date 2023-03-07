@@ -21,7 +21,7 @@ def parse_args():
                         help='Regularization.')
     parser.add_argument('--epoch', type=int, default=1600,
                         help='Number of epoch.')
-    parser.add_argument('--Ks', nargs='?', default= [20],
+    parser.add_argument('--Ks', nargs='?', default=[20],
                         help='Evaluate on Ks optimal items.')
     parser.add_argument('--log_interval', type=int, default=10,
                         help='log\'s interval epoch while training')
@@ -33,7 +33,7 @@ def parse_args():
                         help='Early stopping point.')
     parser.add_argument('--checkpoint', type=str, default='./',
                         help='Specify model save path.')
-    parser.add_argument('--modeltype', type=str, default= 'BC_LOSS',
+    parser.add_argument('--modeltype', type=str, default='BC_LOSS',
                         help='Specify model save path.')
     parser.add_argument('--cuda', type=int, default=0,
                         help='Specify which gpu to use.')
@@ -50,7 +50,7 @@ def parse_args():
     parser.add_argument('--num_workers', type=int, default=8,
                         help='number of workers in data loader')
     parser.add_argument('--neg_sample', type=int, default=-1,
-                        help='negative sample ratio.')    
+                        help='negative sample ratio.')
 
     # MACR
     parser.add_argument('--alpha', type=float, default=1e-3,
@@ -59,34 +59,34 @@ def parse_args():
                         help='beta')
     parser.add_argument('--c', type=float, default=30.0,
                         help='Constant c.')
-    #CausE
+    # CausE
     parser.add_argument('--cf_pen', type=float, default=0.05,
                         help='Imbalance loss.')
-    
-    #SAM-REG
+
+    # SAM-REG
 
     parser.add_argument('--rweight', type=float, default=0.05)
-    parser.add_argument('--sam',type=bool,default=True)
-    parser.add_argument('--pop_test',type=bool,default=False)
+    parser.add_argument('--sam', type=bool, default=True)
+    parser.add_argument('--pop_test', type=bool, default=False)
 
-    #SimpleX
+    # SimpleX
 
     parser.add_argument('--w_neg', type=float, default=1)
-    parser.add_argument('--neg_margin',type=float, default=0.4)
-    
-    #BC_LOSS
+    parser.add_argument('--neg_margin', type=float, default=0.4)
+
+    # BC_LOSS
     parser.add_argument('--tau1', type=float, default=0.12,
                         help='temperature parameter for L1')
     parser.add_argument('--tau2', type=float, default=0.1,
                         help='temperature parameter for L2')
     parser.add_argument('--w_lambda', type=float, default=0.5,
                         help='weight for combining l1 and l2.')
-    parser.add_argument('--freeze_epoch',type=int,default=5)
+    parser.add_argument('--freeze_epoch', type=int, default=5)
 
+    # DCL_LOSS
+    parser.add_argument('--tau_plus', type=float, default=0.07,
+                        help='bias correction probability')
+    parser.add_argument('--Tau', type=float, default=0.1,
+                        help='temperature parameter')
 
-    
-
-    
     return parser.parse_args()
-
-
