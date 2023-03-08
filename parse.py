@@ -29,7 +29,7 @@ def parse_args():
                         help='Interval of evaluation.')
     parser.add_argument('--saveID', type=str, default="",
                         help='Specify model save path.')
-    parser.add_argument('--patience', type=int, default=10,
+    parser.add_argument('--patience', type=int, default=5,
                         help='Early stopping point.')
     parser.add_argument('--checkpoint', type=str, default='./',
                         help='Specify model save path.')
@@ -88,5 +88,9 @@ def parse_args():
                         help='bias correction probability')
     parser.add_argument('--Tau', type=float, default=0.1,
                         help='temperature parameter')
+
+    # HCL_LOSS
+    parser.add_argument('--hcl_beta', type=float, default=0.5,
+                        help='hcl_beta')
 
     return parser.parse_args()

@@ -19,7 +19,7 @@ import os
 from data import Data
 from parse import parse_args
 from model import CausE, IPS, LGN, MACR, INFONCE_batch, INFONCE, SAMREG, BC_LOSS, BC_LOSS_batch, SimpleX, SimpleX_batch, \
-    DCL_LOSS_batch
+    DCL_LOSS_batch, HCL_LOSS_batch
 from torch.utils.data import Dataset, DataLoader
 
 
@@ -458,6 +458,8 @@ if __name__ == '__main__':
         saveID += "n_layers=" + str(args.n_layers) + "tau=" + str(args.tau)
     if args.modeltype == 'DCL_LOSS_batch':
         saveID += "Tau=" + str(args.Tau) + "tau_plus=" + str(args.tau_plus)
+    if args.modeltype == 'HCL_LOSS_batch':
+        saveID += "HCL_beta=" + str(args.hcl_beta) + "Tau=" + str(args.Tau) + "tau_plus=" + str(args.tau_plus)
     if args.modeltype == "BC_LOSS" or args.modeltype == 'BC_LOSS_batch':
         saveID += "batch_size=" + str(args.batch_size) + "n_layers=" + str(args.n_layers) + "tau1=" + str(
             args.tau1) + "tau2=" + str(args.tau2) + "w=" + str(args.w_lambda)
@@ -537,6 +539,8 @@ if __name__ == '__main__':
         model = INFONCE_batch(args, data)
     if args.modeltype == 'DCL_LOSS_batch':
         model = DCL_LOSS_batch(args, data)
+    if args.modeltype == 'HCL_LOSS_batch':
+        model = DCL_LOSS_batch(args, data)
     if args.modeltype == 'IPS':
         model = IPS(args, data)
     if args.modeltype == 'CausE':
@@ -613,6 +617,11 @@ if __name__ == '__main__':
                 loss = mf_loss + reg_loss
 
             elif args.modeltype == 'DCL_LOSS_batch':
+
+                mf_loss, reg_loss = model(users, pos_items)
+                loss = mf_loss + reg_loss
+
+            elif args.modeltype == 'HCL_LOSS_batch':
 
                 mf_loss, reg_loss = model(users, pos_items)
                 loss = mf_loss + reg_loss

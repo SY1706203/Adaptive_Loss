@@ -413,6 +413,53 @@ class DCL_LOSS_batch(LGN):
         return dcl_loss, reg_loss
 
 
+class HCL_LOSS_batch(LGN):
+    def __init__(self, args, data):
+        super().__init__(args, data)
+        self.hcl_beta = args.hcl_beta
+        self.Tau = args.Tau
+        self.tau_plus = args.tau_plus
+        self.neg_sample = args.neg_sample if args.neg_sample != -1 else self.batch_size - 1
+
+    def get_negative_mask(self, batch_size):
+        negative_mask = torch.ones((batch_size, batch_size), dtype=bool)
+        for i in range(batch_size):
+            negative_mask[i, i] = 0
+        return negative_mask
+
+    def forward(self, users, pos_items):
+        all_users, all_items = self.compute()
+
+        userEmb0 = self.embed_user(users)
+        posEmb0 = self.embed_item(pos_items)
+
+        users_emb = all_users[users]
+        pos_emb = all_items[pos_items]
+
+        users_emb = F.normalize(users_emb, dim=1)
+        pos_emb = F.normalize(pos_emb, dim=1)
+
+        ratings = torch.matmul(users_emb, torch.transpose(pos_emb, 0, 1))
+        ratings_diag = torch.diag(ratings)
+
+        numerator = torch.exp(ratings_diag / self.Tau)
+        mask = self.get_negative_mask(self.batch_size).cuda()
+        neg_ratings = ratings.masked_select(mask).view(self.batch_size, -1)
+        neg_ratings = torch.sum(torch.exp(neg_ratings / self.Tau), dim=1)
+        reweight = (self.hcl_beta * neg_ratings) / neg_ratings.mean()
+        # denominator = torch.sum(torch.exp(ratings / self.Tau), dim=1)
+        N = self.batch_size - 1
+        Ng = (-self.tau_plus * N * numerator + reweight * neg_ratings) / (1 - self.tau_plus)
+        Ng = torch.clamp(Ng, min=N * np.e ** (-1 / self.Tau))
+        dcl_loss = torch.mean(torch.negative(torch.log(numerator / (numerator + Ng))))
+
+        regularizer = 0.5 * torch.norm(userEmb0) ** 2 + 0.5 * torch.norm(posEmb0) ** 2
+        regularizer = regularizer / self.batch_size
+        reg_loss = self.decay * regularizer
+
+        return dcl_loss, reg_loss
+
+
 class BC_LOSS(LGN):
     def __init__(self, args, data):
         super().__init__(args, data)
@@ -543,6 +590,12 @@ class BC_LOSS_batch(LGN):
 
         ratings_diag = torch.cos(torch.arccos(torch.clamp(ratings_diag, -1 + 1e-7, 1 - 1e-7)) + \
                                  (1 - torch.sigmoid(pos_ratings_margin)))
+        '''
+        theta = torch.arccos(torch.clamp(ratings_diag, -1 + 1e-7, 1 - 1e-7))
+        M = torch.arccos(torch.clamp(pos_ratings_margin, -1 + 1e-7, 1 - 1e-7))
+        M_ = torch.tensor([M[i] if M[1] < math.pi - theta[i] else math.pi - theta[i] for i in range(len(M))]).cuda()
+        ratings_diag = torch.cos(theta + M_)
+        '''
 
         numerator = torch.exp(ratings_diag / self.tau1)
         denominator = torch.sum(torch.exp(ratings / self.tau1), dim=1)
